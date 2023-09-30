@@ -1,0 +1,9 @@
+/** @type {import('next').NextConfig} */
+const nextConfig = {
+    reactStrictMode: false,
+    env: {
+        KAKAO_REST_API_KEY: process.env.KAKAO_REST_API_KEY,
+    },
+}
+
+module.exports = nextConfig;

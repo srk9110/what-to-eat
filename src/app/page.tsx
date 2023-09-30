@@ -15,6 +15,7 @@ type CategoryOption = {
 
 type LocalProps = {
   address_name: string;
+  place_name: string;
   x: string;
   y: string;
 };
@@ -50,7 +51,7 @@ export default function Home() {
     requestHeaders.set('Content-Type', 'application/json;charset=UTF-8');
     requestHeaders.set('Authorization', `KakaoAK ${process.env.NEXT_PUBLIC_KAKAO_REST_API_KEY}`);
 
-    const url = "https://dapi.kakao.com/v2/local/search/address.json?";
+    const url = "https://dapi.kakao.com/v2/local/search/keyword.json?";
 
     await fetch(`${url}query=${search}&size=10`, 
     {
@@ -63,6 +64,7 @@ export default function Home() {
         const arr: LocalProps[] = data.documents.map((item: LocalProps) => (
           {
             address_name: item.address_name,
+            place_name: item.place_name,
             x: item.x,
             y: item.y
           }
@@ -100,13 +102,14 @@ export default function Home() {
           {
             localList.length ? 
               <>
-                <div className='mb-4'>지역 {localList.length}개가 검색되었어요. 정확한 지역을 선택해주세요!</div>
+                <div className='mb-4'>정확한 지역을 선택해주세요!</div>
                 <div className='flex flex-col gap-3 pb-36'>
                   {
                     localList.map((item, index) => (
                       <button key={index} 
                               className={`${local === item ? "bg-orange-400" : "bg-gray-400"} rounded-lg shadow-md text-white  p-2 text-left`}
                               onClick={() => localHandler(item)}>
+                                {item.place_name}<br/>
                                 {item.address_name}
                       </button>
                     ))

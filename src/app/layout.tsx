@@ -12,12 +12,6 @@ export default function RootLayout({
 }) {
   return (
     <html>
-      <head>
-      <script
-        type="text/javascript"
-        src="//dapi.kakao.com/v2/maps/sdk.js?appkey=246a4b82711acbbbb55f493b4eb884ea&libraries=services,clusterer"
-      ></script>
-      </head>
       <body>
         <section className='max-w-screen-sm pt-8 mx-auto bg-white'>
         <div className='flex flex-col items-center mb-12 px-4'>

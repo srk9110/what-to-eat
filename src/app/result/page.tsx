@@ -1,7 +1,9 @@
 'use client';
 
 import {useState, useEffect} from 'react';
+import Script from 'next/script';
 import { useSearchParams } from 'next/navigation'
+import { Map, MapMarker } from 'react-kakao-maps-sdk';
 import Link from 'next/link';
 
 interface Info {
@@ -11,58 +13,32 @@ interface Info {
     address_name?: string;
     category_name?: string;
     phone?: string;
-    x?: string;
-    y?: string;
+    x?: number;
+    y?: number;
 };
 
-declare global {
-    interface Window {
-    kakao: any;
-    }
-};
 
 export default function Result(){
+    const KAKAO_SDK_URL = `//dapi.kakao.com/v2/maps/sdk.js?appkey=${process.env.NEXT_PUBLIC_KAKAO_JS_API_KEY}&autoload=false`;
+
     const params = useSearchParams();
     const local = params.get('local');
     const category = params.get('category');
-    const x = params.get('x');
-    const y = params.get('y');
+    const x = Number(params.get('x'));
+    const y = Number(params.get('y'));
 
     const [page, setPage] = useState<number>(1);
     const [list, setList] = useState<Info[]>();
-    const [isShowMap, setIsShowMap] = useState<boolean>(false);
 
     useEffect(() => {
         getCategorySearch();
-
-        const kakaoMapScript = document.createElement('script');
-        kakaoMapScript.async = false;
-        kakaoMapScript.src = '//dapi.kakao.com/v2/maps/sdk.js?appkey=246a4b82711acbbbb55f493b4eb884ea&autoload=false';
-        document.head.appendChild(kakaoMapScript);
-
-        let mapContainer = null;
-        let mapOption = null;
-        let map = null;
-
-        const onLoadKakaoApi = () => {
-            window.kakao.maps.load(() => {
-                mapContainer = document.getElementById('map');
-                mapOption = { 
-                    center: new window.kakao.maps.LatLng(33.450701, 126.570667), // 지도의 중심좌표
-                    level: 3 // 지도의 확대 레벨
-                };
-                map = new window.kakao.maps.Map(mapContainer, mapOption); // 지도를 생성합니다
-            })
-        };
-
-        kakaoMapScript.addEventListener('load', onLoadKakaoApi);
     },[]);
 
     useEffect(() => {
-        if(isShowMap) {
+        if(list && list.length) {
             showMap();
         }
-    }, [isShowMap]);
+    }, [list]);
 
     const getCategorySearch = async() => {
         const requestHeaders: HeadersInit = new Headers();
@@ -71,7 +47,7 @@ export default function Result(){
     
         const url = "https://dapi.kakao.com/v2/local/search/category.json?";
     
-        await fetch(`${url}category_group_code=${category}&x=${x}&y=${y}&size=10&page=${page}`, 
+        await fetch(`${url}category_group_code=${category}&x=${x}&y=${y}&radius=10000&size=10&page=${page}`, 
         {
             method: "GET",
             headers: requestHeaders
@@ -95,7 +71,6 @@ export default function Result(){
                 } else {
                     randomArray = copy;
                 }
-
                 setList(randomArray);
             }
         });
@@ -106,29 +81,28 @@ export default function Result(){
         return temp[temp.length-1];
     };
 
-    const toggleHandler = () => {
-        setIsShowMap(prev => !prev);
-    };
-
     const showMap = () => {
-
-        // // 마커가 표시될 위치입니다 
-        // var markerPosition  = new window.kakao.maps.LatLng(33.450701, 126.570667); 
-
-        // // 마커를 생성합니다
-        // var marker = new window.kakao.maps.Marker({
-        // position: markerPosition
-        // });
-
-        // // 마커가 지도 위에 표시되도록 설정합니다
-        // marker.setMap(map);
+        return (
+            <>
+                <Script src={KAKAO_SDK_URL} strategy="beforeInteractive" />
+                <Map center={{ lat: y, lng: x }} style={{ width: '100%', height: '100%' }} level={5}>
+                    {
+                        list && list.map((item, index) => (
+                            <MapMarker 
+                                key={index}
+                                position={{lat: Number(item.y), lng: Number(item.x)}}/>
+                        ))
+                    }
+                </Map>
+            </>
+        );
     };
 
     return (
         <section className='px-4'>
             {
                 list && list.length ?
-                    <div className='text-l font-medium mb-6'>
+                <div className='text-l font-medium mb-6'>
                         {local}에서 {category === "FD6" ? "음식점을" : "카페를"} 뽑아봤어요! (최대 5개)<br/>
                         마음에 드는 항목이 없을 경우, 다시 뽑을래요 버튼을 눌러 다시 뽑아보실 수 있어요.
                     </div>
@@ -138,23 +112,19 @@ export default function Result(){
                 </div>
             }
             <button className='block mx-auto mb-9 w-36 px-3 py-2 bg-red-400 text-white rounded-lg shadow-md'>다시 뽑을래요</button>
+            <div className='w-full h-80 mb-4'>{showMap()}</div>
             <ul className='mb-10'>
                 {
                     list && list.length ? list.map((item,index) => (
-                        <li key={index} className='bg-white rounded-lg shadow-md p-4 border border-gray-100 mb-2'>
+                        <li key={index} className='bg-white rounded-lg shadow-md p-4 border border-gray-100 mb-2' >
                             <div>
                                 <div className='text-lg font-semibold mb-1'>{item.place_name}</div>
                                 <div className='text-sm text-gray-400 mb-3'>{item.category_name ? returnCategory(item.category_name) : "-"}</div>
                                 <div>{item.phone}</div>
                                 <div className='mb-3'>{item.road_address_name || item.address_name}</div>
                                 <a href={item.place_url} target="_blank" className='inline-block text-xs rounded-lg bg-slate-400 text-white py-1 px-2 mr-2'>상세 보기</a>
-                                <div className='inline-block text-xs text-white py-1 px-2 rounded-lg bg-orange-500' onClick={() => toggleHandler()}>지도 보기</div>
+                                <div className='inline-block text-xs text-white py-1 px-2 rounded-lg bg-orange-500' onClick={() => {}}>지도 보기</div>
                             </div>
-                            {
-                                isShowMap ?
-                                    <div id='map' className='w-4 h-4'></div>
-                                : null
-                            }
                         </li>
                     ))
                     : null

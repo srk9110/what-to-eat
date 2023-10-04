@@ -74,7 +74,7 @@ export default function Home() {
 
   const goUrl = () => {
     if(local) {
-      router.push(`/result?category=${category?.value}&local=${local.address_name}&x=${local.x}&y=${local.y}`);
+      router.push(`/result?category=${category?.value}&local=${local.place_name}&x=${local.x}&y=${local.y}`);
     }
   };
 
@@ -169,7 +169,7 @@ export default function Home() {
                     : "지역을 "}
                   선택해주세요
               </div> 
-            : <div>{local.place_name}({local.address_name})에서 {category.label}{category.label === "음식점" ? "을" : "를"} 뽑아볼까요? (최대 5개)</div>
+            : <div>{local.place_name} 주변에서 {category.label}{category.label === "음식점" ? "을" : "를"} 뽑아볼까요? (최대 5개)</div>
           }
         </div>
         <button className={`w-64 text-center inline-block px-3 py-2 rounded-lg text-white ${category && local ? "bg-orange-400" : "bg-gray-400"}`}

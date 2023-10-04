@@ -31,8 +31,9 @@ export default function Result(){
     const y = Number(params.get('y'));
 
     const [page, setPage] = useState<number>(1);
-    const [list, setList] = useState<Info[]>();
+    const [list, setList] = useState<Info[]>([]);
     const [isPageEnd, setIsPageEnd] = useState<boolean>(false);
+    const [selectedOne, setSelectedOne] = useState<Info>();
 
     let kakaoMapScript: HTMLScriptElement | null = null;
 
@@ -61,7 +62,7 @@ export default function Result(){
                                 center: new window.kakao.maps.LatLng(item?.y, item?.x),
                                 level: 3,
                             }
-                        )
+                        );
                         markerPosition  = new window.kakao.maps.LatLng(item?.y, item?.x);
                         marker = new window.kakao.maps.Marker({position: markerPosition});
                         marker.setMap(map);
@@ -72,6 +73,21 @@ export default function Result(){
             kakaoMapScript?.addEventListener('load', onLoadKakaoAPI)
         }
     }, [list]);
+
+    useEffect(() => {
+        if(!selectedOne) return;
+        const container = document.getElementById("map_selected");
+        const map = new window.kakao.maps.Map(
+            container,
+            {
+                center: new window.kakao.maps.LatLng(selectedOne?.y, selectedOne?.x),
+                level: 3,
+            }
+        );
+        const markerPosition  = new window.kakao.maps.LatLng(selectedOne?.y, selectedOne?.x);
+        const marker = new window.kakao.maps.Marker({position: markerPosition});
+        marker.setMap(map);
+    }, [selectedOne]);
 
     const getCategorySearch = async() => {
         const requestHeaders: HeadersInit = new Headers();
@@ -125,12 +141,17 @@ export default function Result(){
         }
     };
 
+    const selectOne = () => {
+        const randomOne = list[Math.floor(Math.random()*list.length)];
+        setSelectedOne(randomOne);
+    };
+
     return (
         <section className='px-4'>
             {
                 list && list.length ?
                 <div className='text-l font-medium mb-6'>
-                        {local}에서 {category === "FD6" ? "음식점을" : "카페를"} 뽑아봤어요! (최대 5개)<br/>
+                        {local} 주변에서 {category === "FD6" ? "음식점을" : "카페를"} 뽑아봤어요! (최대 5개)<br/>
                         마음에 드는 항목이 없을 경우, 다시 뽑을래요 버튼을 눌러 다시 뽑아보실 수 있어요.
                     </div>
                 : 
@@ -165,20 +186,28 @@ export default function Result(){
                         <div className='text-l font-medium mb-3'>
                             목록에서 결정이 어려우시다면 하나만 뽑을래요 버튼을 눌러주세요!
                         </div>
-                        <button className='block mx-auto mb-9 w-36 px-3 py-2 bg-orange-400 text-white rounded-lg shadow-md'>하나만 뽑을래요</button>
+                        <button className='block mx-auto mb-9 w-36 px-3 py-2 bg-orange-400 text-white rounded-lg shadow-md'
+                                onClick={() => selectOne()}>하나만 뽑을래요</button>
 
-                        <div className='text-l font-medium mb-3'>
-                            무작위로 한 곳을 뽑아봤어요! 즐거운 식사되세요!
-                        </div>
-                        <div className='bg-white rounded-lg shadow-md p-4 border border-gray-100 mb-10'>
-                            <div>
-                                <div className='text-lg font-semibold mb-1'>정돈정돈정정돈정돈정돈정돈정돈정돈정돈정돈</div>
-                                <div className='text-sm text-gray-400 mb-3'>돈까스, 우동</div>
-                                <div>02-336-0923</div>
-                                <div className='mb-3'>서울 마포구 어울마당로 46</div>
-                                <a href="https://www.naver.com" target="_blank" className='inline-block text-xs rounded-lg bg-slate-400 text-white py-1 px-2 mr-2'>상세 보기</a>
-                            </div>
-                        </div>
+                        {
+                            selectedOne ?
+                                <>
+                                    <div className='text-l font-medium mb-3'>
+                                        무작위로 한 곳을 뽑아봤어요! 즐거운 시간되세요!
+                                    </div>
+                                    <div className='bg-white rounded-lg shadow-md p-4 border border-gray-100 mb-10'>
+                                        <div className='mb-6'>
+                                            <div className='text-lg font-semibold mb-1'>{selectedOne.place_name}</div>
+                                            <div className='text-sm text-gray-400 mb-3'>{selectedOne.category_name ? returnCategory(selectedOne.category_name) : "-"}</div>
+                                            <div>{selectedOne.phone}</div>
+                                            <div className='mb-3'>{selectedOne.road_address_name || selectedOne.address_name}</div>
+                                            <a href={selectedOne.place_url} target="_blank" className='inline-block text-xs rounded-lg bg-slate-400 text-white py-1 px-2 mr-2'>상세 보기</a>
+                                        </div>
+                                        <div id='map_selected' className='w-full h-60 mb-4'/>
+                                    </div>
+                                </>
+                            : null    
+                        }
                     </>
                 : null
             }
@@ -187,7 +216,7 @@ export default function Result(){
                 지역과 카테고리를 다시 검색하고 싶으신 경우 아래 버튼을 눌러주세요!
             </div>
             <Link href="/">
-                <button className='block mx-auto w-36 px-3 py-2 mb-10 bg-red-400 text-white rounded-lg shadow-md'>다시 검색하기</button>
+                <button className='block mx-auto w-36 px-3 py-2 mb-10 bg-orange-400 text-white rounded-lg shadow-md'>다시 검색하기</button>
             </Link>
         </section>
     )

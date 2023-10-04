@@ -12,6 +12,7 @@ export default function RootLayout({
 }) {
   return (
     <html>
+      <head></head>
       <body>
         <section className='max-w-screen-sm pt-8 mx-auto bg-white'>
         <div className='flex flex-col items-center mb-12 px-4'>

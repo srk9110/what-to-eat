@@ -1,6 +1,6 @@
 'use client';
 
-import {useState, useEffect} from 'react';
+import {useState, useEffect, useRef} from 'react';
 import Script from 'next/script';
 import { useSearchParams } from 'next/navigation'
 import { Map, MapMarker } from 'react-kakao-maps-sdk';
@@ -17,6 +17,11 @@ interface Info {
     y?: number;
 };
 
+declare global {
+    interface Window {
+        kakao: any;
+    }
+}
 
 export default function Result(){
     const KAKAO_SDK_URL = `//dapi.kakao.com/v2/maps/sdk.js?appkey=${process.env.NEXT_PUBLIC_KAKAO_JS_API_KEY}&autoload=false`;
@@ -29,25 +34,54 @@ export default function Result(){
 
     const [page, setPage] = useState<number>(1);
     const [list, setList] = useState<Info[]>();
+    const [isOpen, setIsOpen] = useState<boolean>(false);
+
+    const refs = useRef<any[]>([]);
+    let kakaoMapScript: HTMLScriptElement | null = null;
 
     useEffect(() => {
         getCategorySearch();
     },[]);
-
+    
     useEffect(() => {
+        
         if(list && list.length) {
-            showMap();
+            if(!kakaoMapScript){
+                kakaoMapScript = document.createElement('script');
+                kakaoMapScript.async = false;
+                kakaoMapScript.src = KAKAO_SDK_URL;
+                document.head.appendChild(kakaoMapScript);
+            }
+
+            const onLoadKakaoAPI = () => {
+                window.kakao.maps.load(() => {
+                    let container = null;
+                    let map = null;
+
+                    list.map((item, index) => {
+                        container = document.getElementById("map_"+index);
+                        map = new window.kakao.maps.Map(container, 
+                            {
+                                center: new window.kakao.maps.LatLng(item?.y, item?.x),
+                                level: 3,
+                            })
+                        });
+
+                    })
+                }
+            
+            kakaoMapScript?.addEventListener('load', onLoadKakaoAPI)
         }
     }, [list]);
 
     const getCategorySearch = async() => {
         const requestHeaders: HeadersInit = new Headers();
-        requestHeaders.set('Content-Type', 'application/json;charset=UTF-8');
+        requestHeaders.set('Content-Type', 'application/json');
         requestHeaders.set('Authorization', `KakaoAK ${process.env.NEXT_PUBLIC_KAKAO_REST_API_KEY}`);
     
         const url = "https://dapi.kakao.com/v2/local/search/category.json?";
     
-        await fetch(`${url}category_group_code=${category}&x=${x}&y=${y}&radius=10000&size=10&page=${page}`, 
+        await fetch(`${url}category_group_code=${category}&x=${x}&y=${y}&radius=1000&size=10&page=${page}`, 
         {
             method: "GET",
             headers: requestHeaders
@@ -81,22 +115,43 @@ export default function Result(){
         return temp[temp.length-1];
     };
 
-    const showMap = () => {
-        return (
-            <>
-                <Script src={KAKAO_SDK_URL} strategy="beforeInteractive" />
-                <Map center={{ lat: y, lng: x }} style={{ width: '100%', height: '100%' }} level={5}>
-                    {
-                        list && list.map((item, index) => (
-                            <MapMarker 
-                                key={index}
-                                position={{lat: Number(item.y), lng: Number(item.x)}}/>
-                        ))
-                    }
-                </Map>
-            </>
-        );
-    };
+    // const showMap = () => {
+    //     return (
+    //         <>
+    //             <Script src={KAKAO_SDK_URL} strategy="beforeInteractive" />
+    //             <Map center={{ lat: y, lng: x }} style={{ width: '100%', height: '100%' }} level={5}>
+    //                 {
+    //                     list && list.map((item, index) => (
+    //                         <MapMarker 
+    //                             key={index}
+    //                             position={{lat: Number(item.y), lng: Number(item.x)}}
+    //                             clickable={true}
+    //                             onClick={() => setIsOpen(true)}>
+    //                             {isOpen && (
+    //                                 <div style={{ minWidth: "150px" }}>
+    //                                     <img
+    //                                         alt="close"
+    //                                         width="14"
+    //                                         height="13"
+    //                                         src="https://t1.daumcdn.net/localimg/localimages/07/mapjsapi/2x/bt_close.gif"
+    //                                         style={{
+    //                                             position: "absolute",
+    //                                             right: "5px",
+    //                                             top: "5px",
+    //                                             cursor: "pointer",
+    //                                         }}
+    //                                         onClick={() => setIsOpen(false)}
+    //                                         />
+    //                                     <div style={{ padding: "5px", color: "#000" }}>Hello World!</div>
+    //                                 </div>
+    //                             )}
+    //                         </MapMarker>
+    //                     ))
+    //                 }
+    //             </Map>
+    //         </>
+    //     );
+    // };
 
     return (
         <section className='px-4'>
@@ -112,11 +167,11 @@ export default function Result(){
                 </div>
             }
             <button className='block mx-auto mb-9 w-36 px-3 py-2 bg-red-400 text-white rounded-lg shadow-md'>다시 뽑을래요</button>
-            <div className='w-full h-80 mb-4'>{showMap()}</div>
+            {/* <div className='w-full h-80 mb-4'>{showMap()}</div> */}
             <ul className='mb-10'>
                 {
                     list && list.length ? list.map((item,index) => (
-                        <li key={index} className='bg-white rounded-lg shadow-md p-4 border border-gray-100 mb-2' >
+                        <li ref={el => (refs.current[index] = el)} key={index} id={item.place_name} className='bg-white rounded-lg shadow-md p-4 border border-gray-100 mb-2'>
                             <div>
                                 <div className='text-lg font-semibold mb-1'>{item.place_name}</div>
                                 <div className='text-sm text-gray-400 mb-3'>{item.category_name ? returnCategory(item.category_name) : "-"}</div>
@@ -124,6 +179,9 @@ export default function Result(){
                                 <div className='mb-3'>{item.road_address_name || item.address_name}</div>
                                 <a href={item.place_url} target="_blank" className='inline-block text-xs rounded-lg bg-slate-400 text-white py-1 px-2 mr-2'>상세 보기</a>
                                 <div className='inline-block text-xs text-white py-1 px-2 rounded-lg bg-orange-500' onClick={() => {}}>지도 보기</div>
+                            </div>
+                            <div>
+                                <div id={`map_${index}`} className='map w-full h-80 mb-4'/>
                             </div>
                         </li>
                     ))

@@ -2,7 +2,6 @@
 
 import {useState, useEffect, useRef} from 'react';
 import { useSearchParams } from 'next/navigation'
-import { Map, MapMarker } from 'react-kakao-maps-sdk';
 import Link from 'next/link';
 
 interface Info {
@@ -33,13 +32,13 @@ export default function Result(){
 
     const [page, setPage] = useState<number>(1);
     const [list, setList] = useState<Info[]>();
+    const [isPageEnd, setIsPageEnd] = useState<boolean>(false);
 
-    const refs = useRef<any[]>([]);
     let kakaoMapScript: HTMLScriptElement | null = null;
 
     useEffect(() => {
         getCategorySearch();
-    },[]);
+    },[page]);
     
     useEffect(() => {
         if(list && list.length) {
@@ -106,7 +105,10 @@ export default function Result(){
                     randomArray = copy;
                 }
                 setList(randomArray);
+            } else {
+                setList([]);
             }
+            setIsPageEnd(data.meta.is_end);
         });
     };
 
@@ -115,43 +117,13 @@ export default function Result(){
         return temp[temp.length-1];
     };
 
-    // const showMap = () => {
-    //     return (
-    //         <>
-    //             <Script src={KAKAO_SDK_URL} strategy="beforeInteractive" />
-    //             <Map center={{ lat: y, lng: x }} style={{ width: '100%', height: '100%' }} level={5}>
-    //                 {
-    //                     list && list.map((item, index) => (
-    //                         <MapMarker 
-    //                             key={index}
-    //                             position={{lat: Number(item.y), lng: Number(item.x)}}
-    //                             clickable={true}
-    //                             onClick={() => setIsOpen(true)}>
-    //                             {isOpen && (
-    //                                 <div style={{ minWidth: "150px" }}>
-    //                                     <img
-    //                                         alt="close"
-    //                                         width="14"
-    //                                         height="13"
-    //                                         src="https://t1.daumcdn.net/localimg/localimages/07/mapjsapi/2x/bt_close.gif"
-    //                                         style={{
-    //                                             position: "absolute",
-    //                                             right: "5px",
-    //                                             top: "5px",
-    //                                             cursor: "pointer",
-    //                                         }}
-    //                                         onClick={() => setIsOpen(false)}
-    //                                         />
-    //                                     <div style={{ padding: "5px", color: "#000" }}>Hello World!</div>
-    //                                 </div>
-    //                             )}
-    //                         </MapMarker>
-    //                     ))
-    //                 }
-    //             </Map>
-    //         </>
-    //     );
-    // };
+    const pageHandler = () => {
+        if(!isPageEnd){
+            setPage(prev => prev + 1);
+        } else {
+            setPage(1);
+        }
+    };
 
     return (
         <section className='px-4'>
@@ -166,19 +138,20 @@ export default function Result(){
                     검색 결과가 없어요!    
                 </div>
             }
-            <button className='block mx-auto mb-9 w-36 px-3 py-2 bg-red-400 text-white rounded-lg shadow-md'>다시 뽑을래요</button>
-            {/* <div className='w-full h-80 mb-4'>{showMap()}</div> */}
+            <button className='block mx-auto mb-9 w-36 px-3 py-2 bg-orange-400 text-white rounded-lg shadow-md'
+                    onClick={() => pageHandler()}>
+                        다시 뽑을래요
+                    </button>
             <ul className='mb-10'>
                 {
                     list && list.length ? list.map((item,index) => (
-                        <li ref={el => (refs.current[index] = el)} key={index} id={item.place_name} className='bg-white rounded-lg shadow-md p-4 border border-gray-100 mb-2'>
+                        <li key={index} id={item.place_name} className='bg-white rounded-lg shadow-md p-4 border border-gray-100 mb-2'>
                             <div className='mb-6'>
                                 <div className='text-lg font-semibold mb-1'>{item.place_name}</div>
                                 <div className='text-sm text-gray-400 mb-3'>{item.category_name ? returnCategory(item.category_name) : "-"}</div>
                                 <div>{item.phone}</div>
                                 <div className='mb-3'>{item.road_address_name || item.address_name}</div>
                                 <a href={item.place_url} target="_blank" className='inline-block text-xs rounded-lg bg-slate-400 text-white py-1 px-2 mr-2'>상세 보기</a>
-                                <div className='inline-block text-xs text-white py-1 px-2 rounded-lg bg-orange-500' onClick={() => {}}>지도 보기</div>
                             </div>
                             <div id={`map_${index}`} className='map w-full h-60 mb-4'/>
                         </li>
@@ -192,7 +165,7 @@ export default function Result(){
                         <div className='text-l font-medium mb-3'>
                             목록에서 결정이 어려우시다면 하나만 뽑을래요 버튼을 눌러주세요!
                         </div>
-                        <button className='block mx-auto mb-9 w-36 px-3 py-2 bg-red-400 text-white rounded-lg shadow-md'>하나만 뽑을래요</button>
+                        <button className='block mx-auto mb-9 w-36 px-3 py-2 bg-orange-400 text-white rounded-lg shadow-md'>하나만 뽑을래요</button>
 
                         <div className='text-l font-medium mb-3'>
                             무작위로 한 곳을 뽑아봤어요! 즐거운 식사되세요!
@@ -204,7 +177,6 @@ export default function Result(){
                                 <div>02-336-0923</div>
                                 <div className='mb-3'>서울 마포구 어울마당로 46</div>
                                 <a href="https://www.naver.com" target="_blank" className='inline-block text-xs rounded-lg bg-slate-400 text-white py-1 px-2 mr-2'>상세 보기</a>
-                                <div className='inline-block text-xs text-white py-1 px-2 rounded-lg bg-orange-500'>지도 보기</div>
                             </div>
                         </div>
                     </>

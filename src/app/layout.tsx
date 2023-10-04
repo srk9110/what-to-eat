@@ -1,4 +1,5 @@
 import './globals.css'
+import Link from 'next/link'
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
@@ -17,7 +18,7 @@ export default function RootLayout({
         <section className='max-w-screen-sm pt-8 mx-auto bg-white'>
         <div className='flex flex-col items-center mb-12 px-4'>
           <h2 className='text-3xl font-bold underline pb-6'>
-            어디서 먹을까?
+            <Link href={"/"}>어디서 먹을까?</Link>
           </h2>
           <div className='font-medium text-gray-500 text-center'>
             직장에서, 여행지에서, 약속 장소에서 어디서 식사할지 고민이신가요?<br/>

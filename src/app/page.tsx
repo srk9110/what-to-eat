@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 
 const categoryOptions = [
@@ -29,12 +29,21 @@ export default function Home() {
   const [isPageEnd, setIsPageEnd] = useState<boolean>(false);
 
   const router = useRouter();
+  const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if(search){
       getLocalSearch(false);
     }
   }, [page]);
+
+  useEffect(() => {
+    if(localList.length){
+      scrollRef.current?.scrollIntoView({
+        behavior: 'smooth'
+      });
+    }
+  },[localList]);
 
   const getLocalSearch = (resetPage: boolean) => {
     const requestHeaders: HeadersInit = new Headers();
@@ -114,15 +123,15 @@ export default function Home() {
           </div>
         </div>
         <div className='mb-10'>
-          <h3 className='text-l font-medium mb-3'>방문할 지역을 입력해주세요.</h3>
-          <div className='flex w-full shadow-md mb-6'>
-            <input className='w-full h-10 rounded-1-lg p-2' type='text' value={search} onChange={(e) => inputHandler(e)}/>
+          <h3 className='text-l font-medium mb-3 text-gray-700'>방문할 지역을 입력해주세요.</h3>
+          <div className='flex w-full shadow-md mb-6 rounded-lg'>
+            <input className='w-full h-10 rounded-1-lg p-2 focus:outline-none bg-gray-100' type='text' value={search} onChange={(e) => inputHandler(e)}/>
             <button className='flex-shrink-0 rounded-r-lg bg-orange-400 px-3 py-2 text-white' onClick={() => getLocalSearch(true)}>검색</button>
           </div>
           {
             localList.length ? 
               <>
-                <div className='mb-4'>정확한 지역을 선택해주세요!</div>
+                <div className='text-l font-medium mb-4 text-gray-700' ref={scrollRef}>정확한 지역을 선택해주세요!</div>
                 <div className='flex flex-col gap-3 pb-8'>
                   {
                     localList.map((item, index) => (
@@ -138,14 +147,14 @@ export default function Home() {
                 <div className='pb-40'>
                   {
                     page > 1 ?
-                      <button className='rounded-lg bg-orange-400 px-3 py-2 text-white float-left' 
+                      <button className='rounded-lg bg-orange-400 px-3 py-2 text-white float-left text-l font-medium' 
                               onClick={() => pageHandler("prev")}>
                       이전</button>
                     : null  
                   }
                   {
                     !isPageEnd ?
-                      <button className='rounded-lg bg-orange-400 px-3 py-2 text-white float-right'
+                      <button className='rounded-lg bg-orange-400 px-3 py-2 text-white float-right text-l font-medium'
                               onClick={() => pageHandler("next")}>
                       다음</button>
                     : null  
@@ -154,25 +163,29 @@ export default function Home() {
               </>
             : 
               isPageEnd ?
-                <div>검색 결과가 없어요!</div>
+                <div className='text-l font-medium text-gray-700 text-center'>검색 결과가 없어요!</div>
               : null  
           }
         </div>
       </div>
       <div className='bg-white flex flex-col items-center max-w-screen-sm w-full fixed bottom-0 p-6 rounded-lg shadow-[-1px_-1px_15px_1px_rgba(0,0,0,0.2)]'>
-        <div className='mb-3'>
+        <div className='mb-3 text-l font-medium text-gray-700'>
           {
             !category || !local ? 
-              <div>
+              <div className='break-keep'>
                 {!category && !local ? "카테고리와 지역을 "
                   : !category ? "카테고리를 " 
                     : "지역을 "}
                   선택해주세요
               </div> 
-            : <div>{local.place_name} 주변에서 {category.label}{category.label === "음식점" ? "을" : "를"} 뽑아볼까요? (최대 5개)</div>
+            : <div className='break-keep'>
+                <span className='font-bold text-orange-500'>{local.place_name}</span>
+                &nbsp;주변에서 <span className='font-bold text-orange-500'>{category.label}</span>
+                {category.label === "음식점" ? "을" : "를"} 뽑아볼까요? (최대 5개)
+              </div>
           }
         </div>
-        <button className={`w-64 text-center inline-block px-3 py-2 rounded-lg text-white ${category && local ? "bg-orange-400" : "bg-gray-400"}`}
+        <button className={`w-64 text-center inline-block px-3 py-2 rounded-lg text-l font-medium text-white ${category && local ? "bg-orange-400" : "bg-gray-400"}`}
                 disabled={!local}
                 onClick={() => {goUrl()}}>
           뽑으러 가기

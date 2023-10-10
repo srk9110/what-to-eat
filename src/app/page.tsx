@@ -136,7 +136,7 @@ export default function Home() {
                   {
                     localList.map((item, index) => (
                       <button key={index} 
-                              className={`${local === item ? "bg-orange-400" : "bg-gray-400"} rounded-lg shadow-md text-white  p-2 text-left`}
+                              className={`${local?.place_name === item.place_name ? "bg-orange-400" : "bg-gray-400"} rounded-lg shadow-md text-white  p-2 text-left`}
                               onClick={() => localHandler(item)}>
                                 {item.place_name}<br/>
                                 {item.address_name}

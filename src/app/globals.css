@@ -1,3 +1,11 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+body {
+    font-family: 'Do Hyeon', sans-serif;
+}
+
+.title a {
+    font-family: 'Black Han Sans', sans-serif;
+}

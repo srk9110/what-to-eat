@@ -29,6 +29,7 @@ export default function Result(){
     const y = Number(params.get('y'));
     
     const [page, setPage] = useState<number>(1);
+    const [originList, setOriginList] = useState<any>([]);
     const [list, setList] = useState<Info[]>([]);
     const [isPageEnd, setIsPageEnd] = useState<boolean>(false);
     const [selectedOne, setSelectedOne] = useState<Info>();
@@ -115,23 +116,9 @@ export default function Result(){
         .then(resp => resp.json())
         .then(data => {
             if(data?.documents?.length) {
-                let copy = JSON.parse(JSON.stringify(data.documents));
-
-                let index = 0;
-                let randomItem: Info;
-                let randomArray: Info[] = [];
-
-                if(copy.length >5) {
-                    for(let i=0; i<5; i++) {
-                        index = Math.floor(Math.random()*copy.length);
-                        randomItem = copy[index];
-                        randomArray.push(randomItem);
-                        copy.splice(index, 1);
-                    }
-                } else {
-                    randomArray = copy;
-                }
-                setList(randomArray);
+                let resultArray = makeRandomList(data.documents);
+                setOriginList(data.documents);
+                setList(resultArray);
             } else {
                 setList([]);
             }
@@ -148,14 +135,45 @@ export default function Result(){
         if(!isPageEnd){
             setPage(prev => prev + 1);
         } else {
-            setPage(1);
+            if(page === 1){
+                let resultArray = makeRandomList(originList);
+                setList(resultArray);
+
+                scrollRef.current?.scrollIntoView({
+                    behavior: "smooth"
+                });
+
+            } else {
+                setPage(1);
+            }
         }
+    };
+
+    const makeRandomList = (arr: any[]): Info[] => {
+        let copy = JSON.parse(JSON.stringify(arr));
+        let index = 0;
+        let randomItem: Info;
+        let randomArray: Info[] = [];
+
+        if(copy.length >5) {
+            for(let i=0; i<5; i++) {
+                index = Math.floor(Math.random()*copy.length);
+                randomItem = copy[index];
+                randomArray.push(randomItem);
+                copy.splice(index, 1);
+            }
+        } else {
+            randomArray = copy;
+        }
+
+        return randomArray;
     };
 
     const selectOne = () => {
         const randomOne = list[Math.floor(Math.random()*list.length)];
         setSelectedOne(randomOne);
     };
+
 
     return (
         <div className='px-4' ref={scrollRef}>

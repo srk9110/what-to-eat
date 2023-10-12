@@ -176,8 +176,8 @@ export default function Result(){
 
 
     return (
-        <div className='px-4' ref={scrollRef}>
-            <div className='mb-28'>
+        <div ref={scrollRef}>
+            <div className='p-4'>
                 {
                     list && list.length ?
                     <div className='text-l font-medium mb-6 text-gray-700 break-keep'>
@@ -194,7 +194,7 @@ export default function Result(){
                         검색 결과가 없어요!    
                     </div>
                 }
-                <ul className='mb-10'>
+                <ul className='mb-6'>
                     {
                         list && list.length ? list.map((item,index) => (
                             <li key={index} id={item.place_name} className='bg-white rounded-lg shadow-md p-4 border border-gray-100 mb-2'>
@@ -216,10 +216,11 @@ export default function Result(){
                     다시 뽑을래요
                 </button>
             </div>
-            <div className='mb-28'>
+            <div className='py-2 bg-gray-100'/>
+            <div className='p-4'>
                 {
                     list && list.length > 1 ?
-                        <>
+                        <div>
                             <div className='text-l font-medium mb-3 text-gray-700 break-keep'>
                                 목록에서 결정이 어려우시다면 아래 버튼을 눌러주세요!
                             </div>
@@ -245,12 +246,12 @@ export default function Result(){
                                     </>
                                 : null    
                             }
-                        </>
+                        </div>
                     : null
                 }
             </div>
-
-            <Link href="/">
+            <div className='py-2 bg-gray-100'/>
+            <Link className='p-4 block' href="/">
                 <button className='block mx-auto w-full px-3 py-2 mb-10 bg-orange-400 text-white rounded-lg shadow-md'>이전 페이지로 돌아가기</button>
             </Link>
         </div>

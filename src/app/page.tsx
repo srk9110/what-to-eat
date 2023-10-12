@@ -104,7 +104,7 @@ export default function Home() {
   };
 
   return (
-    <section className='w-full'>
+    <section className='w-full bg-white'>
       <div className='flex flex-col px-4'>
         <div className='mb-10'>
           <h3 className='text-l font-medium mb-3'>카테고리를 선택해주세요.</h3>
@@ -136,7 +136,7 @@ export default function Home() {
                   {
                     localList.map((item, index) => (
                       <button key={index} 
-                              className={`${local?.place_name === item.place_name ? "bg-orange-400" : "bg-gray-400"} rounded-lg shadow-md text-white  p-2 text-left`}
+                              className={`${local?.address_name === item.address_name && local?.place_name === item.place_name ? "bg-orange-400" : "bg-gray-400"} rounded-lg shadow-md text-white  p-2 text-left`}
                               onClick={() => localHandler(item)}>
                                 {item.place_name}<br/>
                                 {item.address_name}

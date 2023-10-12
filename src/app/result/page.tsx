@@ -176,55 +176,57 @@ export default function Result(){
 
 
     return (
-        <div ref={scrollRef}>
-            <div className='p-4'>
+        <div ref={scrollRef} className='bg-white'>
+            <div className='p-4 mb-2'>
                 {
                     list && list.length ?
-                    <div className='text-l font-medium mb-6 text-gray-700 break-keep'>
-                        <span className='font-bold text-orange-500'>{local}</span> 주변에서&nbsp;
-                        {
-                            category === "FD6" ? 
-                                <><span className='font-bold text-orange-500'>음식점</span>을</>
-                            : <><span className='font-bold text-orange-500'>카페</span>를</>
-                        } 
-                        &nbsp;뽑아봤어요! (최대 5개)
-                    </div>
+                        <>
+                            <div className='text-l font-medium mb-6 text-gray-700 break-keep'>
+                                <span className='font-bold text-orange-500'>{local}</span> 주변에서&nbsp;
+                                {
+                                    category === "FD6" ? 
+                                        <><span className='font-bold text-orange-500'>음식점</span>을</>
+                                    : <><span className='font-bold text-orange-500'>카페</span>를</>
+                                } 
+                                &nbsp;뽑아봤어요! (최대 5개)
+                            </div>
+                            <ul className='mb-6'>
+                                {
+                                    list.map((item,index) => (
+                                        <li key={index} id={item.place_name} className='bg-white rounded-lg shadow-md p-4 border border-gray-100 mb-2'>
+                                            <div className='mb-6 text-l font-medium text-gray-700'>
+                                                <div className='text-lg font-semibold mb-1 break-keep'>{item.place_name}</div>
+                                                <div className='text-sm text-gray-400 mb-3'>{item.category_name ? returnCategory(item.category_name) : "-"}</div>
+                                                <div>{item.phone}</div>
+                                                <div className='mb-3 break-keep'>{item.road_address_name || item.address_name}</div>
+                                                <a href={item.place_url} target="_blank" className='inline-block text-xs rounded-lg bg-slate-400 text-white py-1 px-2 mr-2'>상세 보기</a>
+                                            </div>
+                                            <div id={`map_${index}`} className='map w-full h-60 mb-4'/>
+                                        </li>
+                                    ))
+                                }
+                            </ul>
+                            <button className='block mx-auto w-full mb-6 px-3 py-2 bg-orange-400 text-white rounded-lg shadow-md text-l font-medium'
+                                    onClick={() => apiPageHandler()}>
+                                다시 뽑을래요
+                            </button>
+                        </>
                     : 
-                    <div className='text-l font-medium mb-6 text-gray-700 break-keep text-center'>
-                        검색 결과가 없어요!    
-                    </div>
+                        <div className='text-l font-medium mb-6 text-gray-700 break-keep text-center'>
+                            검색 결과가 없어요!    
+                        </div>
                 }
-                <ul className='mb-6'>
-                    {
-                        list && list.length ? list.map((item,index) => (
-                            <li key={index} id={item.place_name} className='bg-white rounded-lg shadow-md p-4 border border-gray-100 mb-2'>
-                                <div className='mb-6 text-l font-medium text-gray-700'>
-                                    <div className='text-lg font-semibold mb-1 break-keep'>{item.place_name}</div>
-                                    <div className='text-sm text-gray-400 mb-3'>{item.category_name ? returnCategory(item.category_name) : "-"}</div>
-                                    <div>{item.phone}</div>
-                                    <div className='mb-3 break-keep'>{item.road_address_name || item.address_name}</div>
-                                    <a href={item.place_url} target="_blank" className='inline-block text-xs rounded-lg bg-slate-400 text-white py-1 px-2 mr-2'>상세 보기</a>
-                                </div>
-                                <div id={`map_${index}`} className='map w-full h-60 mb-4'/>
-                            </li>
-                        ))
-                        : null
-                    }
-                </ul>
-                <button className='block mx-auto w-full px-3 py-2 bg-orange-400 text-white rounded-lg shadow-md text-l font-medium'
-                        onClick={() => apiPageHandler()}>
-                    다시 뽑을래요
-                </button>
             </div>
-            <div className='py-2 bg-gray-100'/>
-            <div className='p-4'>
-                {
-                    list && list.length > 1 ?
+            {
+                list && list.length > 1 ?
+                <>
+                    <div className='py-2 bg-gray-100'/>
+                    <div className='p-4 mb-2'>
                         <div>
                             <div className='text-l font-medium mb-3 text-gray-700 break-keep'>
                                 목록에서 결정이 어려우시다면 아래 버튼을 눌러주세요!
                             </div>
-                            <button className='text-l font-medium block mx-auto mb-9 w-full px-3 py-2 bg-orange-400 text-white rounded-lg shadow-md'
+                            <button className='text-l font-medium block mx-auto mb-6 w-full px-3 py-2 bg-orange-400 text-white rounded-lg shadow-md'
                                     onClick={() => selectOne()}>하나만 뽑을래요</button>
 
                             {
@@ -247,10 +249,15 @@ export default function Result(){
                                 : null    
                             }
                         </div>
-                    : null
-                }
-            </div>
-            <div className='py-2 bg-gray-100'/>
+                    </div>
+                </>
+                : null
+            }
+            {
+                list && list.length ?
+                    <div className='py-2 bg-gray-100'/>
+                : null
+            }
             <Link className='p-4 block' href="/">
                 <button className='block mx-auto w-full px-3 py-2 mb-10 bg-orange-400 text-white rounded-lg shadow-md'>이전 페이지로 돌아가기</button>
             </Link>

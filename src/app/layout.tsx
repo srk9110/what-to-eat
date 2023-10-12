@@ -18,8 +18,8 @@ export default function RootLayout({
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&&family=Do+Hyeon&display=swap" rel="stylesheet"/>
       </head>
-      <body>
-        <section className='max-w-screen-sm mx-auto bg-white'>
+      <body className='bg-gray-100'>
+        <section className='max-w-screen-sm mx-auto bg-white h-screen'>
         <div className='flex flex-col items-center pb-12 px-4 title-wrap'>
           <h2 className='title text-3xl py-6 text-gray-700 font-normal'>
             <Link href={"/"}>어디서 뭐 먹을까?🤔</Link>
